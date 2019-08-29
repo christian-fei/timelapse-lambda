@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source flags
+
+echo "LAMBDA_NAME: $LAMBDA_NAME"
+echo "REGION: $REGION"
+
+aws lambda invoke --region $REGION --function-name $LAMBDA_NAME --payload "{\"bucket\":\"$BUCKET_NAME\", \"amount\": 48, \"fps\": 6}" out --log-type Tail --query 'LogResult' --output text | base64 --decode
+
+cat out

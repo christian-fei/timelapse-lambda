@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source flags
+
+echo "LAMBDA_NAME: $LAMBDA_NAME"
+echo "ROLE_ARN: $ROLE_ARN"
+echo "REGION: $REGION"
+echo "FFMPEG_LAYER_ARN: $FFMPEG_LAYER_ARN"
+
+aws lambda create-function \
+  --region $REGION \
+  --function-name $LAMBDA_NAME \
+  --runtime nodejs10.x \
+  --timeout 180 \
+  --memory 2048 \
+  --region $REGION \
+  --role $ROLE_ARN \
+  --handler lambda.handler \
+  --zip-file "fileb://lambda.zip"
+
+aws lambda update-function-configuration \
+  --region $REGION \
+  --function-name $LAMBDA_NAME \
+  --layers $FFMPEG_LAYER_ARN
