@@ -4,3 +4,4 @@ out
 lambda.zip
 *.mp4
 package-lock.json
+.nyc_output/

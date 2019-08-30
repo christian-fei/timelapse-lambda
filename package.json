@@ -4,7 +4,7 @@
   "description": "make a timelapse from a set of snapshots with AWS Lambda and S3",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "tap index.test.js",
     "delete-lambda": "./delete-aws-lamdba",
     "create-lambda": "./create-aws-lamdba",
     "deploy-lambda": "./make-aws-lambda-zip && ./deploy-aws-lambda",
@@ -16,5 +16,8 @@
   "dependencies": {
     "aws-sdk": "^2.518.0",
     "fluent-ffmpeg": "^2.1.2"
+  },
+  "devDependencies": {
+    "tap": "^14.6.1"
   }
 }
