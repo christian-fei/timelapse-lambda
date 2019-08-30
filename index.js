@@ -5,28 +5,27 @@ exports.saveTimelapseToS3 = saveTimelapseToS3
 
 const { promisify } = require('util')
 const fs = require('fs')
-const writeFile = promisify(fs.writeFile).bind(fs)
 const ffmpeg = require('fluent-ffmpeg')
 
 const AWS = require('aws-sdk')
 const S3 = new AWS.S3()
-const listObjects = promisify(S3.listObjects).bind(S3)
-const getObject = promisify(S3.getObject).bind(S3)
-const putObject = promisify(S3.putObject).bind(S3)
 
 function timelapsePathFor (name) { return `/tmp/${name}` }
 
-function downloadS3Images ({ bucket, amount } = {}) {
+function downloadS3Images ({ bucket, amount } = {}, { listObjects = promisify(S3.listObjects).bind(S3), getObject = promisify(S3.getObject).bind(S3), writeFile = promisify(fs.writeFile).bind(fs) } = {}) {
   if (!bucket) throw new Error('bucket missing')
   return listObjects({ Bucket: bucket })
     .then(data => {
-      const files = data.Contents
+      const tasks = data.Contents
         .filter(d => d.Key.startsWith('201'))
         .filter((d, i) => i > (data.Contents.length - 1 - amount)).map(d => d.Key)
-
-      return Promise.all(files.map(file => getObject({ Bucket: bucket, Key: file })))
+        .map(file => getObject({ Bucket: bucket, Key: file }))
+      return Promise.all(tasks)
     })
-    .then(files => Promise.all(files.map((file, i) => writeFile(`/tmp/${i}.jpg`, file.Body))))
+    .then(files => {
+      const tasks = files.map((file, i) => writeFile(`/tmp/${i}.jpg`, file.Body))
+      return Promise.all(tasks)
+    })
 }
 
 function createTimelapse ({ name, fps } = {}) {
