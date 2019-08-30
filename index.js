@@ -5,7 +5,7 @@ exports.saveTimelapseToS3 = saveTimelapseToS3
 
 const { promisify } = require('util')
 const fs = require('fs')
-const ffmpeg = require('fluent-ffmpeg')
+const fluentffmpeg = require('fluent-ffmpeg')
 
 const AWS = require('aws-sdk')
 const S3 = new AWS.S3()
@@ -28,7 +28,7 @@ function downloadS3Images ({ bucket, amount } = {}, { listObjects = promisify(S3
     })
 }
 
-function createTimelapse ({ name, fps } = {}) {
+function createTimelapse ({ name, fps } = {}, { ffmpeg = fluentffmpeg } = {}) {
   const timelapsePath = timelapsePathFor(name)
   return new Promise((resolve, reject) => {
     ffmpeg().addInput('/tmp/%01d.jpg').noAudio().outputOptions(`-r ${fps}`).videoCodec('libx264')
@@ -38,7 +38,7 @@ function createTimelapse ({ name, fps } = {}) {
   })
 }
 
-function saveTimelapseToS3 ({ bucket, name }) {
+function saveTimelapseToS3 ({ bucket, name }, { putObject = promisify(S3.putObject).bind(S3) }) {
   const timelapsePath = timelapsePathFor(name)
   return putObject({ Body: fs.readFileSync(timelapsePath), Bucket: bucket, Key: name })
 }
